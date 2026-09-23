@@ -44,6 +44,14 @@ WORKDIR /app
 
 COPY --from=builder /build/build/recommendation-engine /usr/local/bin/recommendation-engine
 
+# The binary is compiled with gcc 13 and requires its runtime libraries
+# (GLIBCXX_3.4.32); bookworm's libstdc++6 only ships 3.4.30. Copy the
+# compiler's lib dir from the build stage and let the loader find it
+# first. Newer libstdc++ is backwards-compatible with the bookworm
+# libgrpc++/libabsl the binary also links.
+COPY --from=builder /usr/local/lib64 /usr/local/lib64
+ENV LD_LIBRARY_PATH=/usr/local/lib64
+
 USER app
 
 EXPOSE 50051
