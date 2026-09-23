@@ -35,6 +35,7 @@ RUN apt-get update \
         libgrpc++1.51 \
         libprotobuf32 \
         libabsl20220623 \
+        libatomic1 \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -r app && useradd -r -g app -d /app app
