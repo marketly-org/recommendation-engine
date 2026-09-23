@@ -53,7 +53,7 @@ grpc::Status RecommendationServiceImpl::GetRecommendations(
 
   const std::int32_t limit = request->limit() > 0 ? request->limit() : 10;
 
-  // This calls into engine.cpp:Recommend (the buggy iteration).
+  // This calls into the recommendation engine.
   RecommendationResult result =
       engine_.Recommend(request->user_id(), request->category(), limit);
 

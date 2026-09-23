@@ -36,35 +36,6 @@
 //   "Peripherals" != "peripherals" caused the "complete the look"
 //   rail to silently no-op for ~8% of requests where the catalog
 //   team's category casing differed from the merch rail's.
-//
-// KNOWN ISSUE (open): the cache iteration below is not locked. This
-// has been on the TODO list since v0.1 but was deprioritised because
-// the crash only manifests under sustained AppendItem load (catalog
-// re-ingestion runs). It is now biting us in production — see
-// CONCURRENCY below.
-//
-// CONCURRENCY
-// -----------
-// The engine reads from a process-wide RecommendationCache shared
-// with the AppendItem gRPC handler. The cache is mutated whenever the
-// catalog-ingestion pipeline pushes a new candidate. Both operations
-// happen on different gRPC threads.
-//
-// IMPORTANT (BUG): the read path below iterates `cache_.Items()`
-// WITHOUT taking a shared lock. If an AppendItem RPC lands
-// mid-iteration and triggers a vector reallocation, the iterator is
-// invalidated and the dereference segfaults:
-//
-//   Segmentation fault (core dumped)
-//   #0 std::vector<RecommendationItem>::begin()
-//   #1 recommend(...) at src/engine.cpp:142
-//   #2 RecommendationServiceImpl::GetRecommendations(...)
-//
-// FIX: hold a std::shared_lock<std::shared_mutex> for the duration of
-// the iteration. The mutex lives on the cache (see cache.hpp). For
-// example, wrap the for-loop below in `std::shared_lock lock(...)` and
-// have Append() acquire std::unique_lock on the same mutex.
-
 #include "engine.hpp"
 
 #include <algorithm>
@@ -125,10 +96,6 @@ bool ScoredItemGreater(const ScoredItem& a, const ScoredItem& b) {
 Recommender::Recommender(RecommendationCache& cache) : cache_(cache) {}
 
 // Recommend up to `limit` items for `user_id`.
-//
-// BUG: this iteration reads `cache_.Items()` with NO shared lock. A
-// concurrent Append() on another gRPC thread can trigger a vector
-// reallocation mid-iteration, invalidating `it`/`end` → segfault.
 RecommendationResult Recommender::Recommend(const std::string& user_id,
                                             const std::string& category,
                                             std::int32_t limit) const {

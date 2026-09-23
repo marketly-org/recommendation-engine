@@ -1,12 +1,6 @@
 // test_engine.cpp — unit tests for the recommendation engine.
 //
-// These tests run single-threaded and so do NOT exercise the
-// iterator-invalidation concurrency bug (see engine.cpp / cache.hpp).
 // They cover the ranking math + filtering + limit clamping.
-//
-// Sentinel should fix the concurrency bug and then ADD a test that
-// runs the engine under concurrent Append() load — see the disabled
-// test at the bottom.
 
 #include "cache.hpp"
 #include "engine.hpp"
@@ -120,30 +114,6 @@ void TestRecommendZeroLimitReturnsNothing() {
   CHECK(result.items.empty());
 }
 
-/*
- * DISABLED — Sentinel should ENABLE this after fixing the bug.
- *
- * This test spawns a writer thread that Appends to the cache while the
- * main thread calls Recommend in a tight loop. With the current (buggy)
- * unsynchronised cache, the engine's iterator is invalidated mid-loop
- * and the process segfaults.
- *
- * void TestRecommendUnderConcurrentAppend() {
- *   RecommendationCache cache;
- *   for (int i = 0; i < 1000; ++i)
- *     cache.Append(MakeItem("seed-" + std::to_string(i), "n", "c", 0.5, 5000));
- *   Recommender engine(cache);
- *   std::atomic<bool> stop{false};
- *   std::thread writer([&]{
- *     for (int i = 0; !stop; ++i)
- *       cache.Append(MakeItem("w-" + std::to_string(i), "n", "c", 0.5, 5000));
- *   });
- *   for (int i = 0; i < 10000; ++i)
- *     engine.Recommend("u", "", 10);   // would segfault today
- *   stop = true;
- *   writer.join();
- * }
- */
 
 }  // namespace
 

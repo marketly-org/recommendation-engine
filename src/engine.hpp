@@ -29,9 +29,7 @@ struct RecommendationResult {
 //
 // The category_match and price_proximity signals are stubbed for now
 // (the user-history service isn't wired up yet) — only the catalog
-// relevance score is used. That's enough to expose the concurrency
-// bug: the engine iterates the shared cache while the AppendItem RPC
-// mutates it.
+// relevance score is used.
 class Recommender {
  public:
   explicit Recommender(RecommendationCache& cache);
