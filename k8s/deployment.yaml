@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/marketly-org/recommendation-engine:sha-03723f0
+          image: ghcr.io/marketly-org/recommendation-engine:sha-4ce16da
           ports:
             - containerPort: 50051
           env:
