@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-engine
+  namespace: marketly
+  labels:
+    app: recommendation-engine
+    tier: api
+spec:
+  type: ClusterIP
+  selector:
+    app: recommendation-engine
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP

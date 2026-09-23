@@ -1,0 +1,40 @@
+# C++ build artifacts
+build/
+*.o
+*.obj
+*.so
+*.a
+*.dylib
+*.exe
+/out/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+.ninja_*
+*.ninja
+
+# Generated protobuf / gRPC sources
+generated/
+*.pb.cc
+*.pb.h
+*.grpc.pb.cc
+*.grpc.pb.h
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*

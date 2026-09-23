@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-engine
+  namespace: marketly
+  labels:
+    app: recommendation-engine
+    tier: api
+  annotations:
+    sentinel.io/repo: "marketly-org/recommendation-engine"
+    sentinel.io/branch: "main"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: recommendation-engine
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: recommendation-engine
+        tier: api
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/marketly-org/recommendation-engine:sha-b395497
+          ports:
+            - containerPort: 50051
+          env:
+            - name: BIND
+              value: "0.0.0.0:50051"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          readinessProbe:
+            grpc:
+              port: 50051
+            initialDelaySeconds: 3
+            periodSeconds: 10
